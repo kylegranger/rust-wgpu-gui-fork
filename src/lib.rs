@@ -1,5 +1,6 @@
 use std::time::Duration;
 use tracing::{error, info, warn};
+use url::{ParseError, Url};
 cfg_if::cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
         use web_time::SystemTime;
@@ -19,6 +20,7 @@ use winit::{
     keyboard::{Key, NamedKey},
     window::{Window, WindowBuilder},
 };
+extern crate querystring;
 
 // #[repr(C)]
 // #[derive(Clone, Debug, Copy, bytemuck::Pod, bytemuck::Zeroable)]
@@ -119,114 +121,7 @@ impl<'window> State<'window> {
 
         surface.configure(&device, &config);
 
-        // let mut font_system =
-        //     FontSystem::new_with_locale_and_db("en-US".into(), glyphon::fontdb::Database::new());
-        // let font = include_bytes!("./fonts/font.ttf");
-        // let emoji = include_bytes!("./fonts/emoji.ttf");
-        // font_system.db_mut().load_font_data(font.to_vec());
-        // font_system.db_mut().load_font_data(emoji.to_vec());
-
-        // let text_cache = SwashCache::new();
-        // let cache = Cache::new(&device);
-        // let viewport = Viewport::new(&device, &cache);
-        // let mut text_atlas = TextAtlas::new(&device, &queue, &cache, config.format);
-        // let text_renderer = TextRenderer::new(
-        //     &mut text_atlas,
-        //     &device,
-        //     wgpu::MultisampleState::default(),
-        //     None,
-        // );
-
-        // let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-        //     label: None,
-        //     source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
-        // });
-
-        // let render_pipeline_layout =
-        //     device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-        //         label: None,
-        //         bind_group_layouts: &[],
-        //         push_constant_ranges: &[],
-        //     });
-
-        // let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-        //     label: None,
-        //     layout: Some(&render_pipeline_layout),
-        //     vertex: wgpu::VertexState {
-        //         module: &shader,
-        //         entry_point: Some("vertex"),
-        //         buffers: &[Vertex::desc()],
-        //         compilation_options: wgpu::PipelineCompilationOptions::default(),
-        //     },
-        //     fragment: Some(wgpu::FragmentState {
-        //         module: &shader,
-        //         entry_point: Some("fragment"),
-        //         targets: &[Some(wgpu::ColorTargetState {
-        //             format: config.format,
-        //             blend: Some(wgpu::BlendState::REPLACE),
-        //             write_mask: wgpu::ColorWrites::ALL,
-        //         })],
-        //         compilation_options: wgpu::PipelineCompilationOptions::default(),
-        //     }),
-        //     primitive: wgpu::PrimitiveState {
-        //         topology: wgpu::PrimitiveTopology::TriangleList,
-        //         strip_index_format: None,
-        //         front_face: wgpu::FrontFace::Ccw,
-        //         cull_mode: Some(wgpu::Face::Back),
-        //         unclipped_depth: false,
-        //         polygon_mode: wgpu::PolygonMode::Fill,
-        //         conservative: false,
-        //     },
-        //     multisample: wgpu::MultisampleState::default(),
-        //     depth_stencil: None,
-        //     multiview: None,
-        //     cache: None,
-        // });
-
         let events_proxy_clone = event_loop_proxy.clone();
-        // let button = button::Button::new(
-        //     button::ButtonConfig {
-        //         rect_pos: RectPos {
-        //             top: 125,
-        //             left: 100,
-        //             bottom: 225,
-        //             right: 400,
-        //         },
-        //         fill_color: [0.5, 0.0, 0.5],
-        //         fill_color_active: [1.0, 0.0, 1.0],
-        //         border_color: [0.0, 0.0, 0.0],
-        //         border_color_active: [0.5, 0.5, 0.5],
-        //         text: "Submit 🚀",
-        //         text_color: Color::rgb(200, 200, 200),
-        //         text_color_active: Color::rgb(255, 255, 255),
-        //         on_click: Box::new(move || {
-        //             let _ = events_proxy_clone.send_event(GUIEvent::SuccessEvent(Id(1)));
-        //         }),
-        //     },
-        //     &mut font_system,
-        // );
-
-        // let text_field = text_field::TextField::new(
-        //     text_field::TextFieldConfig {
-        //         rect_pos: RectPos {
-        //             top: 50,
-        //             left: 100,
-        //             bottom: 120,
-        //             right: 400,
-        //         },
-        //         fill_color: [0.9, 0.9, 0.9],
-        //         fill_color_active: [1.0, 1.0, 1.0],
-        //         border_color: [0.3, 0.3, 0.3],
-        //         border_color_active: [0.1, 0.1, 0.1],
-        //         text_color: Color::rgb(10, 10, 10),
-        //     },
-        //     &mut font_system,
-        // );
-
-        // let components = vec![
-        //     Component::Button(Id(0), button),
-        //     Component::TextField(Id(1), text_field),
-        // ];
 
         Self {
             window,
@@ -365,22 +260,12 @@ pub async fn run() {
         info!("location: {:?}", location);
         let href = location.href().unwrap();
         info!("href: {:?}", href);
-        // let window = window.into_serde();
-        // info!("window SERDE: {:?}", window);
-        // let navigator = window.navigator();
-        // let example = serde_wasm_bindgen::from_value(navigator).unwrap();
-        // info!("example: {:?}", example);
-        // info!("navigator: {:?}", navigator);
-        // let navigator: web_sys::Navigator = navigator.into_serde().unwrap();
-        // info!("navigator: {:?}", navigator);
-        // let do_not_track = navigator.do_not_track();
-        // let test_value: String = do_not_track.into_serde().unwrap();
-        // info!("do_not_track: {:?}", do_not_track.as_string());
+        let url = Url::parse(&href).unwrap();
+        let query = url.query().unwrap();
+        info!("query: {:?}", query);
 
-        let document = window.document().expect("should have a document on window");
-        info!("document: {:?}", document);
-        let body = document.body().expect("document should have a body");
-        info!("body: {:?}", body);
+        let params = querystring::querify(&query);
+        info!("params: {:?}", params);
     }
     run_app(event_loop, window).await;
 }
