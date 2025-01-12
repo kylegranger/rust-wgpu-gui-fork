@@ -1,6 +1,7 @@
 use glyphon::{Color, FontSystem, Resolution, SwashCache, TextArea, TextAtlas, TextRenderer};
 use rectangle::*;
 use std::time::Duration;
+use tracing::{error, info, warn};
 cfg_if::cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
         use web_time::SystemTime;
@@ -527,16 +528,19 @@ impl<'window> State<'window> {
 pub async fn run() {
     cfg_if::cfg_if! {
         if #[cfg(target_arch = "wasm32")] {
-            std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-            console_log::init_with_level(log::Level::Warn).expect("Couldn't initialize logger");
+            // std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+            // console_log::init_with_level(log::Level::Warn).expect("Couldn't initialize logger");
+            console_error_panic_hook::set_once();
+            tracing_wasm::set_as_global_default();
+
         } else {
-            env_logger::init();
+            tracing_subscriber::fmt::init();
         }
     }
 
-    log::info!("sample info log");
-    log::warn!("sample warn log");
-    log::error!("sample error log");
+    info!("sample info log");
+    warn!("sample warn log");
+    error!("sample error log");
 
     let event_loop = EventLoopBuilder::<GUIEvent>::with_user_event()
         .build()
@@ -623,7 +627,7 @@ async fn run_app(event_loop: EventLoop<GUIEvent>, window: Window) {
                         match state.render() {
                             Ok(_) => {}
                             Err(wgpu::SurfaceError::OutOfMemory) => elwt.exit(),
-                            Err(e) => log::error!("render error: {e:?}"),
+                            Err(e) => error!("render error: {e:?}"),
                         }
 
                         fps += 1;
