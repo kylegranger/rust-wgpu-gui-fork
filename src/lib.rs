@@ -4,6 +4,7 @@ cfg_if::cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
         use web_time::SystemTime;
         use wasm_bindgen::prelude::*;
+        use wasm_bindgen::JsValue;
     } else {
         use std::time::SystemTime;
     }
@@ -333,7 +334,6 @@ pub async fn run() {
             // console_log::init_with_level(log::Level::Warn).expect("Couldn't initialize logger");
             console_error_panic_hook::set_once();
             tracing_wasm::set_as_global_default();
-
         } else {
             tracing_subscriber::fmt::init();
         }
@@ -359,6 +359,28 @@ pub async fn run() {
                 Some(())
             })
             .unwrap();
+        let window = web_sys::window().unwrap();
+        info!("window: {:?}", window);
+        let location = window.location();
+        info!("location: {:?}", location);
+        let href = location.href().unwrap();
+        info!("href: {:?}", href);
+        // let window = window.into_serde();
+        // info!("window SERDE: {:?}", window);
+        // let navigator = window.navigator();
+        // let example = serde_wasm_bindgen::from_value(navigator).unwrap();
+        // info!("example: {:?}", example);
+        // info!("navigator: {:?}", navigator);
+        // let navigator: web_sys::Navigator = navigator.into_serde().unwrap();
+        // info!("navigator: {:?}", navigator);
+        // let do_not_track = navigator.do_not_track();
+        // let test_value: String = do_not_track.into_serde().unwrap();
+        // info!("do_not_track: {:?}", do_not_track.as_string());
+
+        let document = window.document().expect("should have a document on window");
+        info!("document: {:?}", document);
+        let body = document.body().expect("document should have a body");
+        info!("body: {:?}", body);
     }
     run_app(event_loop, window).await;
 }
