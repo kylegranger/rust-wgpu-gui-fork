@@ -1,6 +1,6 @@
-use std::time::Duration;
 use glyphon::{Color, FontSystem, Resolution, SwashCache, TextArea, TextAtlas, TextRenderer};
 use rectangle::*;
+use std::time::Duration;
 cfg_if::cfg_if! {
     if #[cfg(target_arch = "wasm32")] {
         use web_time::SystemTime;
@@ -130,7 +130,7 @@ impl<'window> State<'window> {
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptionsBase {
-                power_preference: wgpu::PowerPreference::default(),
+                power_preference: wgpu::PowerPreference::HighPerformance,
                 force_fallback_adapter: false,
                 compatible_surface: Some(&surface),
             })
@@ -533,6 +533,10 @@ pub async fn run() {
             env_logger::init();
         }
     }
+
+    log::info!("sample info log");
+    log::warn!("sample warn log");
+    log::error!("sample error log");
 
     let event_loop = EventLoopBuilder::<GUIEvent>::with_user_event()
         .build()
